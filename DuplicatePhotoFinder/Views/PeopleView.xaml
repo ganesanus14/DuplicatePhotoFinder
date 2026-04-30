@@ -1,0 +1,59 @@
+﻿<UserControl x:Class="DuplicatePhotoFinder.Views.PeopleView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:DuplicatePhotoFinder.Converters"
+             xmlns:ui="http://schemas.modernwpf.com/2019">
+
+    <UserControl.Resources>
+        <conv:FileSizeConverter          x:Key="FileSizeConverter" />
+        <conv:BoolToVisibilityConverter  x:Key="BoolToVisConverter" />
+        <conv:InverseBooleanConverter    x:Key="InverseBoolConverter" />
+        <conv:PathToThumbnailConverter   x:Key="PathToThumbnailConverter" />
+        <conv:DetectionModeConverter     x:Key="DetectionModeConverter" />
+        <conv:BoolToVisibilityConverter  x:Key="InverseBoolToVisConverter" />
+    </UserControl.Resources>
+    
+    <ScrollViewer Padding="20">
+        <ItemsControl ItemsSource="{Binding FaceGroups}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="0 0 0 30">
+                        <TextBlock Text="Person Group"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Margin="0 0 0 10"/>
+
+                        <ItemsControl ItemsSource="{Binding Faces}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{ui:ThemeResource CardBackground}"
+                                            CornerRadius="8"
+                                            Margin="5"
+                                            Padding="5">
+                                        <StackPanel>
+                                            <Image Source="{Binding ImagePath}"
+                                                   Width="120" Height="120"
+                                                   Stretch="UniformToFill"/>
+
+                                            <TextBlock Text="{Binding ImagePath}"
+                                                       TextWrapping="Wrap"
+                                                       Width="120"
+                                                       FontSize="10"
+                                                       Margin="0 5 0 0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
+</UserControl>

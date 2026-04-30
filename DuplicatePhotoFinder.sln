@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34310.174
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DuplicateEngine", "DuplicateEngine\DuplicateEngine.csproj", "{18D120B3-E94A-4649-A06D-2C3BC397512B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DuplicatePhotoFinder", "DuplicatePhotoFinder\DuplicatePhotoFinder.csproj", "{DBE782C1-FA68-4979-8368-1E9271B09AA4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{18D120B3-E94A-4649-A06D-2C3BC397512B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18D120B3-E94A-4649-A06D-2C3BC397512B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18D120B3-E94A-4649-A06D-2C3BC397512B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18D120B3-E94A-4649-A06D-2C3BC397512B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBE782C1-FA68-4979-8368-1E9271B09AA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBE782C1-FA68-4979-8368-1E9271B09AA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBE782C1-FA68-4979-8368-1E9271B09AA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBE782C1-FA68-4979-8368-1E9271B09AA4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0A37A4A5-57A3-4BDB-8DAC-E30063F2C96D}
+	EndGlobalSection
+EndGlobal

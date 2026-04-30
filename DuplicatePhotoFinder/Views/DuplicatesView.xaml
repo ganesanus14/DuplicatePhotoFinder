@@ -1,0 +1,364 @@
+﻿<UserControl x:Class="DuplicatePhotoFinder.Views.DuplicatesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:DuplicatePhotoFinder.Converters"
+             xmlns:ui="http://schemas.modernwpf.com/2019">
+
+    <UserControl.Resources>
+        <conv:FileSizeConverter          x:Key="FileSizeConverter" />
+        <conv:BoolToVisibilityConverter  x:Key="BoolToVisConverter" />
+        <conv:InverseBooleanConverter    x:Key="InverseBoolConverter" />
+        <conv:PathToThumbnailConverter   x:Key="PathToThumbnailConverter" />
+        <conv:DetectionModeConverter     x:Key="DetectionModeConverter" />
+        <conv:BoolToVisibilityConverter  x:Key="InverseBoolToVisConverter" />
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ═══ CommandBar ═══ -->
+        <ui:CommandBar Grid.Row="0"
+                   DefaultLabelPosition="Right"
+                   Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+
+            <ui:AppBarButton Icon="OpenFile" Label="Select Folder"
+                         Command="{Binding SelectFolderCommand}"
+                         IsEnabled="{Binding IsScanning,
+                                     Converter={StaticResource InverseBoolConverter}}" />
+
+            <ui:AppBarButton Icon="Find" Label="Scan"
+                         Command="{Binding ScanCommand}" />
+
+            <ui:AppBarButton Icon="Cancel" Label="Stop"
+                         Command="{Binding CancelScanCommand}" />
+
+            <ui:AppBarSeparator />
+
+            <ui:AppBarButton Icon="SelectAll" Label="Auto-Select Duplicates"
+                         Command="{Binding SelectAllDuplicatesCommand}" />
+
+            <ui:AppBarButton Label="Select All Blurry"
+                         Command="{Binding SelectAllBlurryCommand}">
+                <ui:AppBarButton.Icon>
+                    <ui:FontIcon Glyph="&#xEB51;" />
+                </ui:AppBarButton.Icon>
+            </ui:AppBarButton>
+
+            <ui:AppBarButton Icon="Delete" Label="Delete Selected"
+                         Command="{Binding DeleteSelectedCommand}"
+                         Foreground="#D32F2F" />
+
+            <ui:CommandBar.SecondaryCommands>
+                <ui:AppBarToggleButton Label="Include Subfolders"
+                                   IsChecked="{Binding IncludeSubfolders, Mode=TwoWay}" />
+                <ui:AppBarButton Label="Open Folder in Explorer"
+                             Command="{Binding OpenInExplorerCommand}" />
+            </ui:CommandBar.SecondaryCommands>
+        </ui:CommandBar>
+
+        <!-- ═══ Settings bar ═══ -->
+        <StackPanel Grid.Row="1" Margin="16,8,16,4">
+
+            <!-- Row 1: folder path + summary -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="{Binding SelectedFolder,
+                              TargetNullValue='No folder selected — click Select Folder to begin'}"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       VerticalAlignment="Center" FontSize="13"
+                       TextTrimming="CharacterEllipsis" />
+
+                <TextBlock Grid.Column="1"
+                       Text="{Binding SummaryText}"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       VerticalAlignment="Center" FontSize="13" />
+            </Grid>
+
+            <!-- Row 2: Detection mode + pHash threshold + blur threshold -->
+            <Grid Margin="0,8,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Detection mode -->
+                <TextBlock Text="Detection:" VerticalAlignment="Center"
+                       FontSize="13" Margin="0,0,8,0" />
+
+                <ComboBox Grid.Column="1"
+                      ItemsSource="{Binding AvailableModes}"
+                      SelectedItem="{Binding SelectedMode, Mode=TwoWay}"
+                      MinWidth="200"
+                      IsEnabled="{Binding IsScanning,
+                                  Converter={StaticResource InverseBoolConverter}}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding
+                            Converter={StaticResource DetectionModeConverter}}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <!-- pHash sensitivity (visible only in visual modes) -->
+                <TextBlock Grid.Column="2" Margin="20,0,8,0"
+                       VerticalAlignment="Center" FontSize="13"
+                       Text="Sensitivity:"
+                       Visibility="{Binding IsVisualMode,
+                                    Converter={StaticResource BoolToVisConverter}}" />
+
+                <StackPanel Grid.Column="3" Orientation="Horizontal"
+                        Visibility="{Binding IsVisualMode,
+                                     Converter={StaticResource BoolToVisConverter}}">
+                    <Slider Minimum="0" Maximum="15" Width="120"
+                        Value="{Binding CustomThreshold, Mode=TwoWay}"
+                        TickFrequency="1" IsSnapToTickEnabled="True"
+                        VerticalAlignment="Center"
+                        IsEnabled="{Binding IsScanning,
+                                    Converter={StaticResource InverseBoolConverter}}" />
+                    <TextBlock VerticalAlignment="Center" Margin="6,0,0,0" FontSize="13">
+                    <Run Text="≤ " /><Run Text="{Binding CustomThreshold, Mode=OneWay}" />
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Blur threshold -->
+                <TextBlock Grid.Column="4" Margin="20,0,8,0"
+                       VerticalAlignment="Center" FontSize="13"
+                       Text="Blur threshold:" />
+
+                <StackPanel Grid.Column="5" Orientation="Horizontal">
+                    <Slider Minimum="0" Maximum="500" Width="120"
+                        Value="{Binding BlurThreshold, Mode=TwoWay}"
+                        TickFrequency="10" IsSnapToTickEnabled="True"
+                        VerticalAlignment="Center"
+                        IsEnabled="{Binding IsScanning,
+                                    Converter={StaticResource InverseBoolConverter}}" />
+                    <TextBlock VerticalAlignment="Center" Margin="6,0,0,0" FontSize="13">
+                    <Run Text="&lt; " />
+                    <Run Text="{Binding BlurThreshold, Mode=OneWay, StringFormat='{}{0:F0}'}" />
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+
+            <!-- Progress bar -->
+            <ui:ProgressBar Margin="0,6,0,0"
+                        Minimum="0" Maximum="{Binding TotalFiles}"
+                        Value="{Binding ProcessedFiles}"
+                        Visibility="{Binding IsScanning,
+                                     Converter={StaticResource BoolToVisConverter}}" />
+        </StackPanel>
+
+        <!-- ═══ Empty state ═══ -->
+        <StackPanel Grid.Row="2"
+                HorizontalAlignment="Center" VerticalAlignment="Center"
+                Visibility="{Binding HasResults,
+                             Converter={StaticResource InverseBoolToVisConverter}}">
+            <TextBlock Text="📷" FontSize="48"
+                   HorizontalAlignment="Center" Margin="0,0,0,8" />
+            <TextBlock Text="No duplicate groups to display"
+                   FontSize="16"
+                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                   HorizontalAlignment="Center" />
+            <TextBlock Text="Select a folder and click Scan to find duplicates."
+                   FontSize="13"
+                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                   HorizontalAlignment="Center" Margin="0,4,0,0" />
+        </StackPanel>
+
+        <!-- ═══ Main content: Duplicates + Blurry ═══ -->
+        <ScrollViewer Grid.Row="2" Margin="0,4,0,0"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+
+            <StackPanel Margin="16,0">
+
+                <!-- ── Duplicate groups ──────────────────────────── -->
+                <ItemsControl ItemsSource="{Binding DuplicateGroups}"
+                          Visibility="{Binding HasResults,
+                                       Converter={StaticResource BoolToVisConverter}}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Margin="0,0,0,12" Padding="16" CornerRadius="8"
+                                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock FontWeight="SemiBold" FontSize="15">
+                                        <Run Text="Group #" />
+                                        <Run Text="{Binding GroupId, Mode=OneWay}" />
+                                        </TextBlock>
+
+                                        <TextBlock Grid.Column="1" Margin="16,0,0,0"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+                                        <Run Text="{Binding Count, Mode=OneWay}" />
+                                        <Run Text=" photos  •  " />
+                                        <Run Text="{Binding Similarity, Mode=OneWay,
+                                                     StringFormat='{}{0}%'}" />
+                                        <Run Text=" similar" />
+                                        </TextBlock>
+                                    </Grid>
+
+                                    <ItemsControl ItemsSource="{Binding Photos}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,0,10,10" Padding="8"
+                                                    CornerRadius="6" Width="210"
+                                                    Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                                                    BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                                                    BorderThickness="1">
+                                                    <StackPanel>
+                                                        <Grid>
+                                                            <Image Height="140" Stretch="Uniform"
+                                                               Source="{Binding FilePath,
+                                                                        Converter={StaticResource PathToThumbnailConverter}}"
+                                                               RenderOptions.BitmapScalingMode="HighQuality" />
+                                                            <CheckBox HorizontalAlignment="Left"
+                                                                  VerticalAlignment="Top"
+                                                                  Margin="2"
+                                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                                        </Grid>
+
+                                                        <TextBlock Text="{Binding FileName}"
+                                                               FontSize="12"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Margin="0,6,0,2"
+                                                               ToolTip="{Binding FilePath}" />
+
+                                                        <TextBlock FontSize="11"
+                                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+                                                        <Run Text="{Binding FileSize,
+                                                                     Converter={StaticResource FileSizeConverter},
+                                                                     Mode=OneWay}" />
+                                                        <Run Text="  •  " />
+                                                        <Run Text="{Binding Resolution, Mode=OneWay}" />
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- ── Blurry images section ─────────────────────── -->
+                <Border Margin="0,4,0,12" Padding="16" CornerRadius="8"
+                    Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                    Visibility="{Binding HasBlurry,
+                                 Converter={StaticResource BoolToVisConverter}}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock FontWeight="SemiBold" FontSize="15"
+                                   Foreground="#E65100">
+                            <Run Text="🔍 Blurry Images" />
+                            </TextBlock>
+
+                            <TextBlock Grid.Column="1" Margin="16,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+                            <Run Text="{Binding BlurryPhotos.Count, Mode=OneWay}" />
+                            <Run Text=" image(s) below sharpness threshold" />
+                            </TextBlock>
+                        </Grid>
+
+                        <ItemsControl ItemsSource="{Binding BlurryPhotos}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Margin="0,0,10,10" Padding="8"
+                                        CornerRadius="6" Width="210"
+                                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                                        BorderBrush="#E65100"
+                                        BorderThickness="2">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Image Height="140" Stretch="Uniform"
+                                                   Source="{Binding FilePath,
+                                                            Converter={StaticResource PathToThumbnailConverter}}"
+                                                   RenderOptions.BitmapScalingMode="HighQuality" />
+                                                <CheckBox HorizontalAlignment="Left"
+                                                      VerticalAlignment="Top"
+                                                      Margin="2"
+                                                      IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                                <!-- Blur badge -->
+                                                <Border HorizontalAlignment="Right"
+                                                    VerticalAlignment="Top"
+                                                    Margin="4"
+                                                    Padding="6,2"
+                                                    CornerRadius="4"
+                                                    Background="#E65100">
+                                                    <TextBlock Text="{Binding BlurLabel}"
+                                                           FontSize="10"
+                                                           Foreground="White"
+                                                           FontWeight="SemiBold" />
+                                                </Border>
+                                            </Grid>
+
+                                            <TextBlock Text="{Binding FileName}"
+                                                   FontSize="12"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="0,6,0,2"
+                                                   ToolTip="{Binding FilePath}" />
+
+                                            <TextBlock FontSize="11"
+                                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}">
+                                            <Run Text="{Binding FileSize,
+                                                         Converter={StaticResource FileSizeConverter},
+                                                         Mode=OneWay}" />
+                                            <Run Text="  •  " />
+                                            <Run Text="{Binding Resolution, Mode=OneWay}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- ═══ Status bar ═══ -->
+        <Border Grid.Row="3"
+            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+            Padding="16,8">
+            <TextBlock Text="{Binding StatusText}" FontSize="12"
+                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+        </Border>
+    </Grid>
+</UserControl>
