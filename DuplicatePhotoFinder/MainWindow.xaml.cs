@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using ModernWpf.Controls;
 using DuplicatePhotoFinder.Views;
 using DuplicatePhotoFinder.ViewModels;
@@ -7,6 +7,8 @@ namespace DuplicatePhotoFinder;
 
 public partial class MainWindow : Window
 {
+    private MainViewModel _mainViewModel;
+
     public MainWindow()
     {
         InitializeComponent();
@@ -16,11 +18,15 @@ public partial class MainWindow : Window
     {
         App.EnableMica(this);
 
+        // Create a single shared MainViewModel instance
+        _mainViewModel = new MainViewModel();
+        DataContext = _mainViewModel;
+
         // Default to Duplicates tab
         NavView.SelectedItem = NavView.MenuItems[0];
         MainContent.Content = new DuplicatesView
         {
-            DataContext = new MainViewModel()
+            DataContext = _mainViewModel
         };
     }
 
@@ -34,16 +40,14 @@ public partial class MainWindow : Window
             case "Duplicates":
                 MainContent.Content = new DuplicatesView
                 {
-                    DataContext = new MainViewModel()
+                    DataContext = _mainViewModel
                 };
                 break;
 
             case "People":
-                var mainVM = DataContext as MainViewModel;
-
                 MainContent.Content = new PeopleView
                 {
-                    DataContext = new PeopleViewModel(mainVM?.SelectedFolder)
+                    DataContext = new PeopleViewModel(_mainViewModel.SelectedFolder)
                 };
                 break;
         }
