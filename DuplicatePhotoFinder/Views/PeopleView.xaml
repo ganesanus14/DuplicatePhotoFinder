@@ -14,47 +14,84 @@
         <conv:BoolToVisibilityConverter  x:Key="InverseBoolToVisConverter" />
     </UserControl.Resources>
     
-    <ScrollViewer Padding="20">
-        <ItemsControl ItemsSource="{Binding FaceGroups}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Margin="0 0 0 30">
-                        <TextBlock Text="Person Group"
-                                   FontSize="20"
-                                   FontWeight="Bold"
-                                   Margin="0 0 0 10"/>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-                        <ItemsControl ItemsSource="{Binding Faces}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel />
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
+        <!-- Header with Detect Faces Button -->
+        <Grid Grid.Row="0" Padding="20" Background="{ui:ThemeResource CardBackground}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="{ui:ThemeResource CardBackground}"
-                                            CornerRadius="8"
-                                            Margin="5"
-                                            Padding="5">
-                                        <StackPanel>
-                                            <Image Source="{Binding ImagePath, Converter={StaticResource PathToImageSourceConverter}}"
-                                                   Width="120" Height="120"
-                                                   Stretch="UniformToFill"/>
+            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                <TextBlock Text="People Recognition"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           Margin="0 0 0 5"/>
+                
+                <TextBlock Text="{Binding StatusText}"
+                           FontSize="12"
+                           Foreground="{ui:ThemeResource TextSecondaryBrush}"/>
+            </StackPanel>
 
-                                            <TextBlock Text="{Binding ImagePath}"
-                                                       TextWrapping="Wrap"
-                                                       Width="120"
-                                                       FontSize="10"
-                                                       Margin="0 5 0 0"/>
-                                        </StackPanel>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </ScrollViewer>
+            <Button Grid.Column="1"
+                    Content="Detect Faces"
+                    Command="{Binding RefreshCommand}"
+                    IsEnabled="{Binding IsDetecting, Converter={StaticResource InverseBoolConverter}}"
+                    Padding="20 10"
+                    VerticalAlignment="Center"/>
+        </Grid>
+
+        <!-- Scrollable Content Area -->
+        <ScrollViewer Grid.Row="1" Padding="20">
+            <ItemsControl ItemsSource="{Binding FaceGroups}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="0 0 0 40">
+                            <TextBlock Text="{StringFormat='Person Group #{GroupId}'}"
+                                       FontSize="18"
+                                       FontWeight="Bold"
+                                       Margin="0 0 0 15"/>
+
+                            <ItemsControl ItemsSource="{Binding Faces}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel />
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{ui:ThemeResource CardBackground}"
+                                                CornerRadius="8"
+                                                Margin="5"
+                                                Padding="8"
+                                                BorderThickness="1"
+                                                BorderBrush="{ui:ThemeResource CardBorderBrush}">
+                                            <StackPanel>
+                                                <Image Source="{Binding ImagePath, Converter={StaticResource PathToImageSourceConverter}}"
+                                                       Width="120" Height="120"
+                                                       Stretch="UniformToFill"
+                                                       Margin="0 0 0 8"/>
+
+                                                <TextBlock Text="{Binding ImagePath}"
+                                                           TextWrapping="Wrap"
+                                                           Width="120"
+                                                           FontSize="9"
+                                                           Foreground="{ui:ThemeResource TextSecondaryBrush}"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
 </UserControl>
