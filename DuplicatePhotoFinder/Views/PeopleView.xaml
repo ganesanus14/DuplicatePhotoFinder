@@ -9,6 +9,7 @@
         <conv:BoolToVisibilityConverter  x:Key="BoolToVisConverter" />
         <conv:InverseBooleanConverter    x:Key="InverseBoolConverter" />
         <conv:PathToThumbnailConverter   x:Key="PathToThumbnailConverter" />
+        <conv:PathToImageSourceConverter x:Key="PathToImageSourceConverter" />
         <conv:DetectionModeConverter     x:Key="DetectionModeConverter" />
         <conv:BoolToVisibilityConverter  x:Key="InverseBoolToVisConverter" />
     </UserControl.Resources>
@@ -37,7 +38,7 @@
                                             Margin="5"
                                             Padding="5">
                                         <StackPanel>
-                                            <Image Source="{Binding ImagePath}"
+                                            <Image Source="{Binding ImagePath, Converter={StaticResource PathToImageSourceConverter}}"
                                                    Width="120" Height="120"
                                                    Stretch="UniformToFill"/>
 
